@@ -32,10 +32,8 @@ can_move() {
         for ((j = 0; j < ${#current_piece[0]}; j++)); do
             local x=$((piece_x + j + dx))
             local y=$((piece_y + i + dy))
-            if [[ ${current_piece[i]:j:1} == 1 ]]; then
-                if [[ $x -lt 0 || $x -ge $width || $y -ge $height || ($y -ge 0 && ${board[y*width+x]} == 1) ]]; then
-                    return 1
-                fi
+            if [[ ${current_piece[i]:j:1} == 1 && (x < 0 || x >= width || y >= height || (y >= 0 && ${board[y*width+x]} == 1)) ]]; then
+                return 1
             fi
         done
     done
@@ -48,7 +46,7 @@ merge_piece() {
         for ((j = 0; j < ${#current_piece[0]}; j++)); do
             local x=$((piece_x + j))
             local y=$((piece_y + i))
-            if [[ ${current_piece[i]:j:1} == 1 && y >= 0 ]]; then
+            if [[ ${current_piece[i]:j:1} == 1 && y -ge 0 ]]; then
                 board[y*width+x]=1
             fi
         done
@@ -79,19 +77,6 @@ check_lines() {
     done
 }
 
-# Function to rotate the piece
-rotate_piece() {
-    local new_piece=()
-    for ((i = 0; i < ${#current_piece[0]}; i++)); do
-        local line=""
-        for ((j = ${#current_piece[@]} - 1; j >= 0; j--)); do
-            line="${line}${current_piece[j]:i:1}"
-        done
-        new_piece+=("$line")
-    done
-    current_piece=("${new_piece[@]}")
-}
-
 # Initialize game variables
 width=10
 height=20
@@ -99,16 +84,17 @@ declare -a board
 for ((i = 0; i < width * height; i++)); do
     board[i]=0
 done
+
+# Define Tetris pieces
 pieces=(
-    ( "1111" )
-    ( "1110" "0010" )
-    ( "1100" "0110" )
-    ( "0110" "1100" )
-    ( "0110" "0011" )
-    ( "1100" "0110" )
-    ( "0010" "0010" "0010" "0010" )
+    "1111"
+    "1110 0010"
+    "1100 0110"
+    "0110 1100"
+    "0110 0011"
+    "1100 0110"
+    "0010 0010 0010 0010"
 )
-score=0
 
 # Main game loop
 while true; do
